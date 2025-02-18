@@ -10,7 +10,7 @@ export default tseslint.config(
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
-/*
+  /*
   eslintPluginPrettierRecommended,
 */
   {
@@ -29,9 +29,7 @@ export default tseslint.config(
   },
   {
     rules: {
-      '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-floating-promises': 'warn',
-      '@typescript-eslint/no-unsafe-argument': 'warn'
+      'eslint-disable-next-line @typescript-eslint/no-unused-vars': 'off',
     },
   },
 );

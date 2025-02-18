@@ -1,41 +1,28 @@
-import { createCipheriv, createDecipheriv, randomBytes, scrypt } from 'crypto';
-import * as process from 'node:process';
-import { promisify } from 'util';
+const bcrypt = require('bcrypt');
 
-const password = process.env.CRYPTO_PASSWORD || 'password';
+const SALT_ROUNDS: number = 10;
 
-async function generateKey(): Promise<Buffer> {
-  return (await promisify(scrypt)(password, 'salt', 32)) as Buffer;
-}
-
-async function encryptText(textToEncrypt: string): Promise<string> {
-  const iv = randomBytes(16);
-  const key = await generateKey();
-  const cipher = createCipheriv('aes-256-ctr', key, iv);
-
-  const encryptedBuffer = Buffer.concat([
-    cipher.update(textToEncrypt),
-    cipher.final(),
-  ]);
-
-  return Buffer.concat([iv, encryptedBuffer]).toString('base64');
+async function hashText(text: string): Promise<string> {
+  const hashedText: string = await (
+    bcrypt.hash as (
+      data: string | Buffer,
+      saltOrRounds: string | number,
+    ) => Promise<string>
+  )(text, SALT_ROUNDS);
+  return hashedText;
 }
 
 async function compareText(
-  encryptedText: string,
+  hashedText: string,
   textToCompare: string,
 ): Promise<boolean> {
-  const encryptedBuffer = Buffer.from(encryptedText, 'base64');
-  const iv = encryptedBuffer.slice(0, 16);
-  const key = await generateKey();
-  const decipher = createDecipheriv('aes-256-ctr', key, iv);
-
-  const decryptedBuffer = Buffer.concat([
-    decipher.update(encryptedBuffer.slice(16)),
-    decipher.final(),
-  ]);
-
-  return decryptedBuffer.toString() === textToCompare;
+  const result: boolean = await (
+    bcrypt.compare as (
+      data: string | Buffer,
+      encrypted: string,
+    ) => Promise<boolean>
+  )(textToCompare, hashedText);
+  return result;
 }
 
-export { encryptText, compareText };
+export { hashText, compareText };

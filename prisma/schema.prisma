@@ -14,11 +14,48 @@ datasource db {
 }
 
 model User {
-  id             String   @id @default(uuid())
-  email          String   @unique
+  id             String     @id @default(uuid())
+  email          String     @unique
   firstName      String
   lastName       String
-  password       String
+  password       String?
   profilePicture String?
-  createdAt      DateTime @default(now())
+  createdAt      DateTime   @default(now())
+  drinks         Drink[]
+  rooms          RoomUser[]
+  refreshToken   String?
+}
+
+model DrinkType {
+  id     String  @id @default(uuid())
+  name   String  @unique
+  slug   String  @unique
+  drinks Drink[]
+}
+
+model Drink {
+  id             String    @id @default(uuid())
+  litersConsumed Float
+  drinkDate      DateTime
+  customType     String?
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  drinkTypeId    String
+  drinkType      DrinkType @relation(fields: [drinkTypeId], references: [id], onDelete: Cascade)
+}
+
+model Room {
+  id    String     @id @default(uuid())
+  title String
+  users RoomUser[]
+}
+
+model RoomUser {
+  id     String @id @default(uuid())
+  userId String
+  roomId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  room   Room   @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, roomId])
 }

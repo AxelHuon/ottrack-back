@@ -7,7 +7,7 @@ import {
   IsOptional,
 } from 'class-validator';
 
-export class AuthLoginRequestDto {
+export class AuthLoginRequestDTO {
   @ApiProperty({ type: String })
   @IsEmail({}, { message: "L'email n'est pas valide" })
   @IsNotEmpty({ message: 'Email is required' })
@@ -18,7 +18,7 @@ export class AuthLoginRequestDto {
   password: string;
 }
 
-export class AuthLoginGoogleRequestDto {
+export class AuthLoginGoogleRequestDTO {
   @ApiProperty({ type: String })
   @IsNotEmpty({ message: 'Le nom est requis' })
   @IsEmail({}, { message: "L'email n'est pas valide" })
@@ -36,12 +36,21 @@ export class AuthLoginGoogleRequestDto {
   @IsOptional()
   profilePicture?: string | null;
 }
-export class AuthLoginResponseDto {
+
+export class AuthLoginResponseDTO {
   @ApiProperty({ type: String })
-  access_token: string;
+  accessToken: string;
+  @ApiProperty({ type: String })
+  refreshToken: string;
 }
 
-export class AuthRegisterRequestDto {
+export class AuthRefreshTokenRequestDTO {
+  @ApiProperty({ type: String })
+  @IsNotEmpty({ message: 'Refresh token is required' })
+  refreshToken: string;
+}
+
+export class AuthRegisterRequestDTO {
   @ApiProperty({ type: String, example: 'John' })
   @IsNotEmpty({ message: 'Le prénom est requis' })
   firstName: string;
