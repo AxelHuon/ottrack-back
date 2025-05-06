@@ -1,29 +1,28 @@
 import { PrismaClient } from '@prisma/client';
+import { hashText } from '../src/utils/crypto';
 
 const prisma = new PrismaClient();
 
-// Fonction pour générer une date aléatoire dans les 5 derniers mois
 function getRandomDateInLastFiveMonths(): Date {
-  const now = new Date();
-  const fiveMonthsAgo = new Date();
-  fiveMonthsAgo.setMonth(now.getMonth() - 4);
+  const startDate = new Date(2025, 0, 1); // Jan 1, 2025
+  const endDate = new Date(2025, 11, 31); // Dec 31, 2025
 
   const randomTime =
-    fiveMonthsAgo.getTime() +
-    Math.random() * (now.getTime() - fiveMonthsAgo.getTime());
+    startDate.getTime() +
+    Math.random() * (endDate.getTime() - startDate.getTime());
   return new Date(randomTime);
 }
 
 // Liste des types de boissons
 const drinkTypes = [
-  'Bière',
-  'Vin',
-  'Cocktail',
-  'Whisky',
-  'Vodka',
-  'Rhum',
-  'Tequila',
-  'Cidre',
+  { name: 'Bière', slug: 'biere' },
+  { name: 'Vin', slug: 'vin' },
+  { name: 'Cocktail', slug: 'cocktail' },
+  { name: 'Whisky', slug: 'whisky' },
+  { name: 'Vodka', slug: 'vodka' },
+  { name: 'Rhum', slug: 'rhum' },
+  { name: 'Tequila', slug: 'tequila' },
+  { name: 'Cidre', slug: 'cidre' },
 ];
 
 async function main() {
@@ -36,11 +35,11 @@ async function main() {
 
   /* Seed les types de boissons */
   const drinkTypeRecords = await Promise.all(
-    drinkTypes.map(async (name) => {
+    drinkTypes.map(async (drink) => {
       return prisma.drinkType.create({
         data: {
-          name,
-          slug: name,
+          name: drink.name,
+          slug: drink.slug,
         },
       });
     }),
@@ -61,7 +60,32 @@ async function main() {
       password: null,
       profilePicture: null,
       drinks: {
-        create: Array.from({ length: 20 }).map(() => {
+        create: Array.from({ length: 100 }).map(() => {
+          const randomDrinkType =
+            drinkTypeRecords[
+              Math.floor(Math.random() * drinkTypeRecords.length)
+            ];
+
+          return {
+            drinkType: { connect: { id: randomDrinkType.id } },
+            litersConsumed: parseFloat((Math.random() * 0.7 + 0.2).toFixed(2)),
+            drinkDate: getRandomDateInLastFiveMonths(),
+          };
+        }),
+      },
+    },
+  });
+
+  /* Création des utilisateurs */
+  const user3 = await prisma.user.create({
+    data: {
+      email: 'root@root.fr',
+      firstName: 'Merwan',
+      lastName: 'Lakaad',
+      password: await hashText('root'),
+      profilePicture: null,
+      drinks: {
+        create: Array.from({ length: 100 }).map(() => {
           const randomDrinkType =
             drinkTypeRecords[
               Math.floor(Math.random() * drinkTypeRecords.length)
@@ -85,7 +109,7 @@ async function main() {
       password: null,
       profilePicture: null,
       drinks: {
-        create: Array.from({ length: 20 }).map(() => {
+        create: Array.from({ length: 100 }).map(() => {
           const randomDrinkType =
             drinkTypeRecords[
               Math.floor(Math.random() * drinkTypeRecords.length)
@@ -109,6 +133,7 @@ main()
     console.error(e);
     process.exit(1);
   })
+  // eslint-disable-next-line @typescript-eslint/no-misused-promises
   .finally(async () => {
     await prisma.$disconnect();
   });

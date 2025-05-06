@@ -29,6 +29,11 @@ export default tseslint.config(
   },
   {
     rules: {
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/explicit-module-boundary-types': 'off',
       'eslint-disable-next-line @typescript-eslint/no-unused-vars': 'off',
     },
   },
