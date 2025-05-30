@@ -44,11 +44,21 @@ export class RoomsDTO {
   slug: string;
 
   @ApiProperty({ type: [UserDTO] })
-  users: UserDTO[];
+  users?: UserDTO[];
 
-  @ApiProperty({ type: Date })
-  createdAt: Date;
+  @ApiPropertyOptional({ type: Date })
+  createdAt?: Date;
 
-  @ApiProperty({ type: Date })
-  updatedAt: Date;
+  @ApiPropertyOptional({ type: Date })
+  updatedAt?: Date;
+}
+
+
+export class GetRoomsBySludDTO {
+  @ApiProperty({
+    description: "Slug de la room",
+  })
+  @IsNotEmpty()
+  @IsString()
+  slug: string;
 }

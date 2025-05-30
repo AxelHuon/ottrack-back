@@ -1,9 +1,23 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
+
+
+
 @Injectable()
 export class UserService {
   constructor(private prisma: PrismaService) {}
+
+
+  readonly userAllowFieldToReturn = {
+    email: true,
+    id: true,
+    firstName: true,
+    lastName: true,
+    profilePicture: true,
+    createdAt: true,
+  };
+
 
   async getUsers() {
     return this.prisma.user.findMany({

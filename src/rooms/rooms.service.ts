@@ -1,16 +1,23 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateRoomsBodyDto } from './dto/rooms.dto';
+import { SlugService } from '../slug/slug.service';
+import { UserService } from '../users/user.service';
+import { CreateRoomsBodyDto, RoomsDTO } from './dto/rooms.dto';
 
 @Injectable()
 export class RoomsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private userService: UserService,
+    private slugService: SlugService,
+  ) {}
 
-  async createRoom(createRoomDto: CreateRoomsBodyDto) {
+  async createRoom(
+    createRoomDto: CreateRoomsBodyDto,
+  ): Promise<RoomsDTO | null> {
     const { title, adminId, users = [] } = createRoomDto;
 
-    const slug = this.generateSlug(title);
-
+    const slug = await this.slugService.generateUniqueSlug(title, 'room');
     return this.prisma.$transaction(async (tx) => {
       const room = await tx.room.create({
         data: {
@@ -42,34 +49,48 @@ export class RoomsService {
         );
       }
 
-      return tx.room.findUnique({
+      const createdRoom = await tx.room.findUnique({
         where: { id: room.id },
         include: {
           users: {
             include: {
               user: {
-                select: {
-                  id: true,
-                  email: true,
-                  firstName: true,
-                  lastName: true,
-                  profilePicture: true,
-                  createdAt: true,
-                }
+                select: this.userService.userAllowFieldToReturn,
               },
             },
           },
         },
       });
+      if (!createdRoom) {
+        return null;
+      }
+      return {
+        ...createdRoom,
+        users: createdRoom.users.map((u) => u.user),
+      };
     });
   }
 
-  private generateSlug(title: string): string {
-    return title
-      .toLowerCase()
-      .replace(/[^\w\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .concat('-', Math.random().toString(36).substring(2, 7));
+  async getRoomBySlug(slug: string): Promise<RoomsDTO | null> {
+    const room = await this.prisma.room.findUnique({
+      where: { slug },
+      include: {
+        users: {
+          include: {
+            user: {
+              select: this.userService.userAllowFieldToReturn,
+            },
+          },
+        },
+      },
+    });
+    if (!room) {
+      return null;
+    }
+
+    return {
+      ...room,
+      users: room.users.map((u) => u.user),
+    };
   }
 }
