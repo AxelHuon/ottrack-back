@@ -46,9 +46,11 @@ model Drink {
 }
 
 model Room {
-  id    String     @id @default(uuid())
-  title String
-  users RoomUser[]
+  id      String     @id @default(uuid())
+  slug    String     @unique
+  title   String
+  adminId String
+  users   RoomUser[]
 }
 
 model RoomUser {

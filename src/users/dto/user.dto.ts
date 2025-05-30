@@ -30,3 +30,14 @@ export class GetUserByIdParamsDTO {
   @IsString()
   id: string;
 }
+
+export class GetUserByEmailParamsDTO {
+  @ApiProperty({
+    description: "email de l'utilisateur",
+    example: 'email@exemple.com',
+  })
+  @IsNotEmpty()
+  @IsString()
+  email: string;
+}
+
